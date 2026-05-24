@@ -1,7 +1,10 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { Check } from "lucide-react";
 import { Logo } from "@/components/ex/Logo";
 import { SectionLabel } from "@/components/ex/SectionLabel";
+import { useState } from "react";
+import { useAuth } from "@/hooks/useAuth";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/signup")({ component: Signup });
 
@@ -10,6 +13,75 @@ function Signup() {
 }
 
 export function SplitAuth({ mode }: { mode: "signup" | "login" }) {
+  const { signUp, signIn, signInWithGoogle } = useAuth();
+  const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
+
+  const [fullName, setFullName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (loading) return;
+
+    if (mode === "signup" && password !== confirmPassword) {
+      toast.error("Passwords do not match");
+      return;
+    }
+
+    setLoading(true);
+    const loadingToast = toast.loading(
+      mode === "signup" ? "Creating your account..." : "Signing in...",
+    );
+
+    try {
+      if (mode === "signup") {
+        const { error } = await signUp(email, password, fullName);
+        toast.dismiss(loadingToast);
+        if (error) {
+          toast.error(error.message || "Failed to create account");
+        } else {
+          toast.success("Account created successfully!");
+          navigate({ to: "/onboarding" });
+        }
+      } else {
+        const { error } = await signIn(email, password);
+        toast.dismiss(loadingToast);
+        if (error) {
+          toast.error(error.message || "Failed to sign in");
+        } else {
+          toast.success("Signed in successfully!");
+          navigate({ to: "/app/dashboard" });
+        }
+      }
+    } catch (err: unknown) {
+      toast.dismiss(loadingToast);
+      const errorMessage =
+        err instanceof Error ? err.message : "An unexpected error occurred";
+      toast.error(errorMessage);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGoogleSignIn = async () => {
+    try {
+      setLoading(true);
+      const { error } = await signInWithGoogle();
+      if (error) {
+        toast.error(error.message || "Google Sign-in failed");
+      }
+    } catch (err: unknown) {
+      const errorMessage =
+        err instanceof Error ? err.message : "An unexpected error occurred";
+      toast.error(errorMessage);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen grid lg:grid-cols-[40%_60%]">
       <aside className="surface-dark p-10 lg:p-14 flex flex-col">
@@ -60,19 +132,38 @@ export function SplitAuth({ mode }: { mode: "signup" | "login" }) {
               ? "It takes 90 seconds."
               : "Continue your exit prep."}
           </p>
-          <form
-            className="mt-8 space-y-4"
-            onSubmit={(e) => {
-              e.preventDefault();
-              window.location.href =
-                mode === "signup" ? "/onboarding" : "/app/dashboard";
-            }}
-          >
-            {mode === "signup" && <Field label="Full Name" type="text" />}
-            <Field label="Email Address" type="email" />
-            <Field label="Password" type="password" />
+          <form className="mt-8 space-y-4" onSubmit={handleSubmit}>
             {mode === "signup" && (
-              <Field label="Confirm Password" type="password" />
+              <Field
+                label="Full Name"
+                type="text"
+                value={fullName}
+                onChange={setFullName}
+                disabled={loading}
+              />
+            )}
+            <Field
+              label="Email Address"
+              type="email"
+              value={email}
+              onChange={setEmail}
+              disabled={loading}
+            />
+            <Field
+              label="Password"
+              type="password"
+              value={password}
+              onChange={setPassword}
+              disabled={loading}
+            />
+            {mode === "signup" && (
+              <Field
+                label="Confirm Password"
+                type="password"
+                value={confirmPassword}
+                onChange={setConfirmPassword}
+                disabled={loading}
+              />
             )}
             {mode === "login" && (
               <div className="text-right">
@@ -86,9 +177,16 @@ export function SplitAuth({ mode }: { mode: "signup" | "login" }) {
             )}
             <button
               type="submit"
-              className="btn-primary w-full justify-center mt-2"
+              disabled={loading}
+              className="btn-primary w-full justify-center mt-2 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {mode === "signup" ? "Create Account" : "Sign In"}
+              {loading
+                ? mode === "signup"
+                  ? "Creating Account..."
+                  : "Signing In..."
+                : mode === "signup"
+                  ? "Create Account"
+                  : "Sign In"}
             </button>
           </form>
 
@@ -96,7 +194,11 @@ export function SplitAuth({ mode }: { mode: "signup" | "login" }) {
             <span className="flex-1 h-px bg-[var(--border-warm)]" /> OR{" "}
             <span className="flex-1 h-px bg-[var(--border-warm)]" />
           </div>
-          <button className="btn-ghost-light w-full justify-center">
+          <button
+            onClick={handleGoogleSignIn}
+            disabled={loading}
+            className="btn-ghost-light w-full justify-center disabled:opacity-50"
+          >
             Continue with Google
           </button>
 
@@ -133,7 +235,19 @@ export function SplitAuth({ mode }: { mode: "signup" | "login" }) {
   );
 }
 
-function Field({ label, type }: { label: string; type: string }) {
+function Field({
+  label,
+  type,
+  value,
+  onChange,
+  disabled,
+}: {
+  label: string;
+  type: string;
+  value: string;
+  onChange: (val: string) => void;
+  disabled?: boolean;
+}) {
   return (
     <label className="block">
       <span className="label-caps" style={{ fontSize: 10 }}>
@@ -142,7 +256,10 @@ function Field({ label, type }: { label: string; type: string }) {
       <input
         type={type}
         required
-        className="mt-2 w-full bg-transparent border border-[var(--border-warm)] rounded-md px-3.5 py-2.5 text-sm text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent)] transition-colors"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        disabled={disabled}
+        className="mt-2 w-full bg-transparent border border-[var(--border-warm)] rounded-md px-3.5 py-2.5 text-sm text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent)] transition-colors disabled:opacity-50"
       />
     </label>
   );

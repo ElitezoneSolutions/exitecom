@@ -21,9 +21,19 @@ export function ScoreRing({
   const pct = Math.max(0, Math.min(score / max, 1));
 
   return (
-    <div className="relative inline-flex items-center justify-center" style={{ width: size, height: size }}>
+    <div
+      className="relative inline-flex items-center justify-center"
+      style={{ width: size, height: size }}
+    >
       <svg width={size} height={size} className="-rotate-90">
-        <circle cx={size / 2} cy={size / 2} r={r} stroke={trackColor} strokeWidth={stroke} fill="none" />
+        <circle
+          cx={size / 2}
+          cy={size / 2}
+          r={r}
+          stroke={trackColor}
+          strokeWidth={stroke}
+          fill="none"
+        />
         <motion.circle
           cx={size / 2}
           cy={size / 2}
@@ -39,10 +49,22 @@ export function ScoreRing({
         />
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <div className="font-display" style={{ color, fontSize: size * 0.36, lineHeight: 1, fontWeight: 500 }}>
+        <div
+          className="font-display"
+          style={{
+            color,
+            fontSize: size * 0.36,
+            lineHeight: 1,
+            fontWeight: 500,
+          }}
+        >
           {score}
         </div>
-        {label && <div className="label-caps-dark mt-1" style={{ fontSize: 10 }}>{label}</div>}
+        {label && (
+          <div className="label-caps-dark mt-1" style={{ fontSize: 10 }}>
+            {label}
+          </div>
+        )}
       </div>
     </div>
   );

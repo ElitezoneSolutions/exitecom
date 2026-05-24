@@ -9,3 +9,5 @@ dist/
 *.log
 landing-*.png
 console-errors.txt
+.env
+.env.local

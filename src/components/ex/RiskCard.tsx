@@ -25,30 +25,55 @@ export function RiskCard({
   recommendation?: string;
 }) {
   const [open, setOpen] = useState(false);
-  const accent = severity === "high" ? "var(--risk-critical)" : severity === "medium" ? "var(--risk-medium)" : "var(--text-muted)";
+  const accent =
+    severity === "high"
+      ? "var(--risk-critical)"
+      : severity === "medium"
+        ? "var(--risk-medium)"
+        : "var(--text-muted)";
   const expandable = !!buyerSees;
 
   return (
-    <div className="card-light overflow-hidden" style={{ borderLeft: `3px solid ${accent}` }}>
+    <div
+      className="card-light overflow-hidden"
+      style={{ borderLeft: `3px solid ${accent}` }}
+    >
       <div className="px-6 py-5">
         <div className="flex items-start justify-between gap-4">
           <div className="flex-1">
             <div className="flex items-center gap-3">
-              <span className="inline-block w-2 h-2 rounded-full" style={{ backgroundColor: accent }} />
-              <h3 className="text-[17px] font-medium text-[var(--text-primary)]">{title}</h3>
+              <span
+                className="inline-block w-2 h-2 rounded-full"
+                style={{ backgroundColor: accent }}
+              />
+              <h3 className="text-[17px] font-medium text-[var(--text-primary)]">
+                {title}
+              </h3>
               <StatusBadge status={severity} />
             </div>
-            <p className="mt-2 text-sm text-[var(--text-secondary)]">{description}</p>
+            <p className="mt-2 text-sm text-[var(--text-secondary)]">
+              {description}
+            </p>
           </div>
           <div className="text-right shrink-0">
-            <div className="font-display text-2xl text-[var(--accent)]">{fmtGBPk(impact)}</div>
-            <div className="label-caps mt-1" style={{ fontSize: 10 }}>Valuation impact</div>
+            <div className="font-display text-2xl text-[var(--accent)]">
+              {fmtGBPk(impact)}
+            </div>
+            <div className="label-caps mt-1" style={{ fontSize: 10 }}>
+              Valuation impact
+            </div>
           </div>
         </div>
 
         {expandable && (
-          <button onClick={() => setOpen(o => !o)} className="mt-4 text-xs font-medium text-[var(--accent)] inline-flex items-center gap-1 transition-colors hover:text-[var(--accent-muted)]">
-            View Buyer Psychology <ChevronDown className={`w-3 h-3 transition-transform ${open ? "rotate-180" : ""}`} />
+          <button
+            onClick={() => setOpen((o) => !o)}
+            className="mt-4 text-xs font-medium text-[var(--accent)] inline-flex items-center gap-1 transition-colors hover:text-[var(--accent-muted)]"
+          >
+            View Buyer Psychology{" "}
+            <ChevronDown
+              className={`w-3 h-3 transition-transform ${open ? "rotate-180" : ""}`}
+            />
           </button>
         )}
 
@@ -65,11 +90,25 @@ export function RiskCard({
   );
 }
 
-function Detail({ label, text, accent }: { label: string; text: string; accent?: boolean }) {
+function Detail({
+  label,
+  text,
+  accent,
+}: {
+  label: string;
+  text: string;
+  accent?: boolean;
+}) {
   return (
     <div>
-      <div className="label-caps" style={{ fontSize: 10 }}>{label}</div>
-      <p className={`mt-1.5 text-sm ${accent ? "text-[var(--text-primary)] font-medium" : "text-[var(--text-secondary)]"}`}>{text}</p>
+      <div className="label-caps" style={{ fontSize: 10 }}>
+        {label}
+      </div>
+      <p
+        className={`mt-1.5 text-sm ${accent ? "text-[var(--text-primary)] font-medium" : "text-[var(--text-secondary)]"}`}
+      >
+        {text}
+      </p>
     </div>
   );
 }
